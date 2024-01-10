@@ -40,9 +40,10 @@ function readPets(){
 }
 
 function createPets(){
-    const age = process.argv[3];
+    const age = Number(process.argv[3]);
     const kind = process.argv[4];
     const name = process.argv[5];
+    console.log(typeof age, typeof kind, typeof name)
     //get data from pets.json using fs.readFile
     fs.readFile('../petsCopy.json', 'utf-8', (error, fileData) => {
         if (error){
