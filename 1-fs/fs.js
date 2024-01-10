@@ -2,6 +2,8 @@ import fs from "node:fs";
 
 const command = process.argv[2];
 const subcommand = process.argv[3];
+const subcommand2 = process.argv[4];
+const subcommand3 = process.argv[5];
 
 if (command === "read"){
     readPets();
@@ -40,7 +42,14 @@ function readPets(){
 }
 
 function createPets(){
-    
+    //if subcommand is integer, sc2 and sc3 are strings...
+    if (subcommand){
+        console.log("create pet with entered info");
+    } else {
+        //display usage code
+        console.error("Usage: node fs.js create AGE KIND NAME");
+        //exit with nonzero exit code?
+    }
 }
 
 //The app should [exit the process] with a non-zero exit code to indicate that it failed to complete any work.
