@@ -5,12 +5,14 @@ const subcommand = process.argv[3];
 
 if (command === "read"){
     readPets();
+} else if (command === "create"){
+    createPets();
 } else if (process.argv.length < 3){
     //displays its usage, ideally to the [standard error], when invoking without subcommand    
     console.error("Usage: node fs.js [read | create | update | destroy]");
 }
 
-function readPets (){
+function readPets(){
     //get data frp, pets.json using fs.readFile
     fs.readFile('../pets.json', 'utf-8', (error, fileData) => {
         if (error){
@@ -35,6 +37,10 @@ function readPets (){
             console.log(petInfo);
         }
     })
+}
+
+function createPets(){
+    
 }
 
 //The app should [exit the process] with a non-zero exit code to indicate that it failed to complete any work.
