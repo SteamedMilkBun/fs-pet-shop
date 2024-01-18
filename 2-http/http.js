@@ -3,6 +3,8 @@
 import fs from "node:fs";
 import http from "node:http";
 const port = 8000;
+//^= starts with /pets/.* and $=ends with .*= anything except newline chars
+//(.*)= captures .=anything except newline chars, *= zero or more times -greedy 
 const petRegExp = /^\/pets\/(.*)$/;
 
 const server = http.createServer(function(req, res) {
@@ -27,7 +29,11 @@ const server = http.createServer(function(req, res) {
     });
 
   } else if (method === "GET" && url.match(petRegExp)) {
-      const index = Number(url.match(petRegExp)[1]);
+      const matchResults = url.match(petRegExp);
+      console.log(petRegExp);
+      console.log(url);
+      const index = Number(matchResults[1]);
+      console.log(matchResults);
 
       fs.readFile("../petsCopy.json", "utf-8", (err, text) => {
         if (err) {
