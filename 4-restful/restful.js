@@ -1,22 +1,40 @@
-import express from "express"
-import fs from "fs"
+import express from "express";
+import fs from "fs";
+import pg from "pg";
 
 const fsPromise = fs.promises;
 
 const PORT = 8001;
+
+const pool = new pg.Pool({
+    host: "localhost",
+    port: 6432,
+    user: "postgres",
+    password: "postgres",
+    database: "petshop"
+});
 
 const app = express();
 // middleware to accept json as request body
 app.use(express.json());
 
 app.get("/pets", (req, res, next) => {
-    fsPromise.readFile("../pets.json", "utf-8")
-        .then((text)=>{
-            res.json(JSON.parse(text));
-        })
-        .catch((err)=>{
-            next(err);
-        })
+    pool.query('SELECT * FROM pets')
+    .then((data) => {
+        console.log(data.rows);
+        res.json(data.rows);
+    })
+    .catch((err) => {
+        console.log("error querying from pets db");
+        res.sendStatus(500);
+    });
+    // fsPromise.readFile("../pets.json", "utf-8")
+    //     .then((text)=>{
+    //         res.json(JSON.parse(text));
+    //     })
+    //     .catch((err)=>{
+    //         next(err);
+    //     })
 });
 
 
