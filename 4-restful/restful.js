@@ -39,23 +39,36 @@ app.get("/pets", (req, res, next) => {
 
 
 app.get("/pets/:indexNum", (req, res, next) => {
+    const petId = Number.parseInt(req.params.indexNum);
+    console.log(`Using petId: ${petId}`);
+    pool.query(`SELECT name, kind, age FROM pets WHERE id = $1`, [petId])
+    .then((data) => {
+        if (data.rows.length == 0) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log(data.rows[0]);
+        res.json(data.rows[0]);
+    })
+    .catch((err) => {
+        console.log(err);
+        res.sendStatus(500);
+    })
+    
+    // const index = Number(req.params.indexNum);
+    // console.log("Using pet index: ", index);
+    // fsPromise.readFile("../pets.json", "utf-8")
+    //     .then((text)=>{
 
-    const index = Number(req.params.indexNum);
-
-    console.log("Using pet index: ", index);
-
-    fsPromise.readFile("../pets.json", "utf-8")
-        .then((text)=>{
-
-            const pets = JSON.parse(text);
-            if (!Number.isInteger(index) || index < 0 || index >= pets.length){
-                res.sendStatus(404);
-                return;
-            }
-            // respond with single pet at index
-            res.json(pets[index]);
-        })
-        .catch((err)=>next(err));
+    //         const pets = JSON.parse(text);
+    //         if (!Number.isInteger(index) || index < 0 || index >= pets.length){
+    //             res.sendStatus(404);
+    //             return;
+    //         }
+    //         // respond with single pet at index
+    //         res.json(pets[index]);
+    //     })
+    //     .catch((err)=>next(err));
 });
 
 
