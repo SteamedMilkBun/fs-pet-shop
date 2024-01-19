@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS pets;
 
 CREATE TABLE pets (
-    id serial,
-    age integer,
-    kind varchar(20),
-    name varchar(20)
+    id SERIAL PRIMARY KEY,
+    age NUMBER,
+    kind VARCHAR(20),
+    name VARCHAR(20)
 );
