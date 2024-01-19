@@ -74,7 +74,8 @@ app.get("/pets/:indexNum", (req, res, next) => {
 
 app.post("/pets", (req, res, next) => {
     const age = Number(req.body.age);
-    const { name, kind } = req.body;
+    const name = req.body.name;
+    const kind = req.body.kind;
     // const kind = req.body.kind;
 
     // TODO make sure name, kind, and age exist, and that age is a number
@@ -84,25 +85,37 @@ app.post("/pets", (req, res, next) => {
         return;
     }
     console.log(`Creating pet with - Name: ${name}, Age: ${age}, Kind: ${kind}`);
-    const pet = {name: name, age: age, kind: kind}
+    //const pet = {name: name, age: age, kind: kind}
     
-    fsPromise.readFile("../pets.json", "utf-8")
-        .then((text)=>{ // read pets 
-            const pets = JSON.parse(text);
-            pets.push(pet);
-            return pets;
-        })
-        .then((pets) => { // write the pets
-            return fsPromise.writeFile("../pets.json", JSON.stringify(pets))
-        })
-        .then(() => {
-            console.log("Added new pet to pets.json");
-            res.json(pet);
+    pool.query(`INSERT INTO pets (name, kind, age) VALUES ($1, $2, $3) RETURNING *`,
+        [name, kind, age])
+        .then((data) => {
+            console.log(data.rows[0]);
+            const newPet = data.rows[0];
+            delete newPet.id;
+            res.json(newPet);
         })
         .catch((err) => {
-            next(err);
-        });      
-})
+            console.log(err);
+            res.sendStatus(500);
+        })
+//     fsPromise.readFile("../pets.json", "utf-8")
+//         .then((text)=>{ // read pets 
+//             const pets = JSON.parse(text);
+//             pets.push(pet);
+//             return pets;
+//         })
+//         .then((pets) => { // write the pets
+//             return fsPromise.writeFile("../pets.json", JSON.stringify(pets))
+//         })
+//         .then(() => {
+//             console.log("Added new pet to pets.json");
+//             res.json(pet);
+//         })
+//         .catch((err) => {
+//             next(err);
+//         });      
+ })
 
 app.patch('/pets/:indexNum', function(req, res, next){
     const index = Number.parseInt(req.params.indexNum);
