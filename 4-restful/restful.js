@@ -160,13 +160,22 @@ app.patch('/pets/:indexNum', function(req, res){
 })
             
 app.delete('/pets/:indexNum', function(req, res){
-    const index = Number.parseInt(req.params.indexNum);
-    console.log("index: ", index)
+    const queryForWHERE = Number.parseInt(req.params.indexNum);
+    console.log("WHERE: ", queryForWHERE)
     if (queryForWHERE.isNaN || !queryForWHERE > 0){//if index is NaN or <= 0, bad request
         res.sendStatus(400);
         return;
     }
-    
+    //if good request, delete at queryForWHERE
+    pool.query(`DELETE FROM pets WHERE id = $1`, [queryForWHERE])
+    .then((data) => {
+        console.log(`Deleted data where id = ${queryForWHERE}`);
+        res.json(data.rows[0]);
+    })
+    .catch((err) => {
+        console.log(err);
+        res.sendStatus(500);
+    })
 })
             
 app.listen(PORT, ()=> {
