@@ -78,32 +78,31 @@ app.post("/pets", (req, res, next) => {
         })
  })
 
-app.patch('/pets/:indexNum', function(req, res, next){
+app.patch('/pets/:indexNum', function(req, res){
     //patch request come in the form of an object, the info we want is in req.body
     //assign const index the value of indexNum from user patch request
-    const petId = Number.parseInt(req.params.indexNum);
+    const queryForWHERE = Number.parseInt(req.params.indexNum);
     const name = req.body.name;
     const age = req.body.age;
     const kind = req.body.kind;
     let queryStringForSET;
-    console.log(`Requested to edit pet @ petId: ${petId}`);
-    console.log(`Requested name: ${name}, age: ${age}, kind: ${kind}`);
+    console.log(`Requested to edit pet @ petId: ${queryForWHERE}`);
+    console.log(`Requested name: ${name}, kind: ${kind}, age: ${age}`);
     // console.log("Requested age: ", age);
     // console.log("Requested kind: ", kind);
-    if (petId.isNaN || !petId > 0){//if index is NaN or name doesnt exist
+    if (queryForWHERE.isNaN || !queryForWHERE > 0){//if index is NaN or name doesnt exist
         res.sendStatus(400);
         return;
     }
-    //handle bad request
-    //if name exists,
+    //handle bad requests, set conditions for number of columns queried
     if (name) {
         if (!typeof name === 'string') {//check format
-            console.log(`Bad request \nName: ${name} is not a string`)
+            console.log(`Bad request \nName: '${name}' is not a string`)
             res.sendStatus(400);
             return
         } else {// if name does exist
-            queryStringForSET = `name = ${name}`;//name = Fido UPDATE pets SET name = Fido WHERE 
-            console.log(` Name exists, current query string for SET: ${queryStringForSET}`);
+            queryStringForSET = `name = '${name}'`;//name = Fido UPDATE pets SET name = Fido WHERE 
+            console.log(`Name exists, current query string for SET: ${queryStringForSET}`);
         }
         //`UPDATE pets SET $1 WHERE id = $2`, [queryStringForSET, petId]
     }
@@ -124,12 +123,12 @@ app.patch('/pets/:indexNum', function(req, res, next){
     }
     if (kind) {
         if (!typeof kind === 'string') {
-            console.log(`Bad request \nKind: ${kind} is not a string`);
+            console.log(`Bad request \nKind: '${kind}' is not a string`);
             res.sendStatus(400);
             return
         } else {
             if (name || age) {
-                queryStringForSET += `, kind = ${kind}`; //SET column1 = value1, column2 = value2, ...
+                queryStringForSET += `, kind = '${kind}'`; //SET column1 = value1, column2 = value2, ...
                 //(name) queryString = `name = ${name}`
                 //also (age) queryString = `name = ${name}, `
                     //`name = ${name}, age = ${age} ...`
@@ -145,86 +144,31 @@ app.patch('/pets/:indexNum', function(req, res, next){
     console.log(`After all conditions, query string for SET: ${queryStringForSET}`);
     //if index is number and name exists, get pet info at index to update
     //create object and assign current properties from req.body for editing
-    pool.query(`SELECT name, kind, age FROM pets WHERE id = $1`, [petId])
+    pool.query(`UPDATE pets SET ${queryStringForSET} WHERE id = $1 RETURNING *`, [queryForWHERE])
     .then((data) => {
-        if (data.rows.length == 0) {
+        if (data.rows.length == 0) {//if no data returned from query, not found
             res.sendStatus(404);
             return;
         }
-        console.log('returning pet: ', data.rows[0]);
+        console.log('returning edited pet: ', data.rows[0]);
         res.json(data.rows[0]);
     })
     .catch((err) => {
         console.log(err);
         res.sendStatus(500);
     })
-    
-    // fsPromise.readFile("../pets.json", 'utf-8')
-    //     .then((text) => {
-        //         const pets = JSON.parse(text);
-        //         if (index < 0 || index > pets.length - 1){
-            //             res.status = 404;
-            //             res.send("Not Found!");
-            //             return;
-            //         }
-            //         // index OK
-            //         console.log(`Changing pet at index ${index} to name ${name}`);
-            //         pets[index].name = name;
-            //         pet = pets[index];
-            //         return fsPromise.writeFile("../pets.json", JSON.stringify(pets))
-            //     })
-            //     .then(() => {
-                //         console.log("Updated pet: ", pet);
-                //         res.json(pet);
-                //     })
-                // .catch((err) => {
-                //     // next(err);
-                //     console.error(err);
-                //     res.sendStatus(500);
-                // })
-            })
+})
             
-app.delete('/pets/:indexNum', function(req, res, next){
+app.delete('/pets/:indexNum', function(req, res){
     const index = Number.parseInt(req.params.indexNum);
     console.log("index: ", index)
-    if (index.isNaN ){
+    if (queryForWHERE.isNaN || !queryForWHERE > 0){//if index is NaN or <= 0, bad request
         res.sendStatus(400);
         return;
     }
     
-    let pet = {};
-    // We have a integer index, and string name
-    fsPromise.readFile("../pets.json", 'utf-8')
-    .then((text) => {
-        const pets = JSON.parse(text);
-        if (index < 0 || index > pets.length - 1){
-            res.status = 404;
-            res.send("Not Found!");
-            return;
-        }
-        // index OK
-        console.log(`Deleting pet at index ${index}`);
-        pet = pets.splice(index, 1);
-        return fsPromise.writeFile("../pets.json", JSON.stringify(pets))
-    })
-    .then(() => {
-        console.log("Deleted pet: ", pet);
-        res.json(pet);
-    })
-    .catch((err) => {
-        // next(err);
-        console.error(err);
-        res.sendStatus(500);
-    })
 })
             
-            
-            // internal server error catching middleware
-            // app.use((err, req, res, next) => {
-//     console.error(err);
-//     res.sendStatus(500);
-// });
-
 app.listen(PORT, ()=> {
     console.log(`Listening on port ${PORT}`);
 });
